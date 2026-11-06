@@ -38,9 +38,6 @@ EXPIRY_FILE = ".expiry_start"
 VALID_HOURS = 9999
 PASSWORD    = "ZYKSUSPAM"
 
-VERIFY_BOT_TOKEN = "9032605949:AAHg6GieuMUjoxo1EcPFCk0trbO46zUgKqE"
-CHANNELS_TO_JOIN = ["@zyksufirst", "@zyksuportal", "@zyksuchat"]
-
 LAVENDER = "\033[38;5;183m"
 RESET    = "\033[0m"
 red      = "\033[1m\033[31m"
@@ -57,7 +54,7 @@ script_running = True
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def typing(text, delay=0.01, color=green):
+def typing(text, delay=0.02, color=green):
     for ch in text:
         sys.stdout.write(color + ch)
         sys.stdout.flush()
@@ -93,6 +90,7 @@ def header():
     print()
 
 def draw_status():
+    
     h_str  = f"{hit:<5}"
     bi_str = f"{bad_ig:<5}"
     ni_str = f"{no_ig:<5}"
@@ -107,7 +105,7 @@ def draw_status():
 
 {yellow}╭─────────────────────────────────────────────────────╮
    
-  {green}𝗛𝗜𝗧𝗦: {h_str}{reset} {blue}𝗕𝗔𝗗 𝗜𝗚: {bi_str}{reset} {red}𝗡𝗢 𝗜𝗚: {ni_str}{reset} {yellow}𝗖𝗛𝗘𝗖𝗞𝗘𝗗: {c_str}{reset}
+  {green}𝗛𝗜𝗧𝗦: {h_str}{reset} {blue}𝗕𝗔𝗗 𝗜𝗚: {bi_str}{reset}{red}𝗡𝗢 𝗜𝗚: {ni_str}{reset}{yellow}𝗖𝗛𝗘𝗖𝗞𝗘𝗗: {c_str}{reset}
  
 {yellow}╰─────────────────────────────────────────────────────╯
 
@@ -144,27 +142,6 @@ def file_active_check():
         return False
     print(f"  {green}✓ 𝐅𝐈𝐋𝐄 𝐀𝐂𝐓𝐈𝐕𝐄.....{reset}\n")
     return True
-
-def verify_user_joined(user_id):
-    missing_channels = []
-    for channel in CHANNELS_TO_JOIN:
-        try:
-            url = f"https://api.telegram.org/bot{VERIFY_BOT_TOKEN}/getChatMember"
-            payload = {"chat_id": channel, "user_id": user_id}
-            r = requests.post(url, json=payload, timeout=5)
-            data = r.json()
-            if not data.get("ok"):
-                missing_channels.append(channel)
-                continue
-            
-            status = data.get("result", {}).get("status")
-            
-            # Added "restricted" to fix the bug
-            if status not in ["member", "administrator", "creator", "restricted"]:
-                missing_channels.append(channel)
-        except Exception:
-            missing_channels.append(channel)
-    return len(missing_channels) == 0, missing_channels
 
 def get_user_id(username):
     try:
@@ -294,7 +271,9 @@ def worker():
     while script_running:
         try:
             charset = string.ascii_lowercase + "0123456789"
-            chosen_user = ''.join(random.choice(charset) for _ in range(random.choice([3, 4, 5, 6, 7])))
+            
+            # ONLY 3, 4, 5 LETTERS HERE
+            chosen_user = ''.join(random.choice(charset) for _ in range(random.choice([3, 4, 5])))
 
             with lock:
                 if chosen_user in used_usernames: continue
@@ -367,13 +346,6 @@ def main():
     time.sleep(1)
 
     header()
-    print(f"  {red} 𝐌𝐔𝐒𝐓 𝐍𝐄𝐄𝐃 𝐓𝐎 𝐉𝐎𝐈𝐍 𝐓𝐇𝐈𝐒 𝐂𝐇𝐀𝐍𝐍𝐄𝐋𝐒 :{reset}")
-    hline(yellow)
-    print(f"  {LAVENDER}[1]{reset} @zyksufirst")
-    print(f"  {LAVENDER}[2]{reset} @zyksuportal")
-    print(f"  {LAVENDER}[3]{reset} @zyksuchat")
-    hline(yellow)
-    print()
     
     print(f"  {cyan}▸{reset} {blue}𝐓𝐆 𝐁𝐎𝐓 𝐓𝐎𝐊𝐄𝐍{reset}")
     TOKEN = input(f"  {cyan}➜ {reset}").strip()
@@ -381,26 +353,13 @@ def main():
     print(f"  {cyan}▸{reset} {blue}𝐓𝐆 𝐂𝐇𝐀𝐓 𝐈𝐃{reset}")
     CHAT_ID = input(f"  {cyan}➜ {reset}").strip()
     
-    spinner("𝐕𝐄𝐑𝐈𝐅𝐘𝐈𝐍𝐆 𝐀𝐂𝐂𝐄𝐒𝐒", duration=2.0, color=green)
-    
-    is_joined, missing = verify_user_joined(CHAT_ID)
-    if not is_joined:
-        print(f"\n{red}❌ 𝐀𝐂𝐂𝐄𝐒𝐒 𝐃𝐄𝐍𝐈𝐄𝐃 !{reset}")
-        print(f"{red}YOU HAVEN'T JOIN THIS CHANNEL{reset}")
-        print(f"{yellow}MISSING: {', '.join(missing)}{reset}\n")
-        time.sleep(3)
-        script_running = False
-        sys.exit()
-    else:
-        print(f"{green}✅ 𝐀𝐂𝐂𝐄𝐒𝐒 𝐆𝐑𝐀𝐍𝐓𝐄𝐃 ! 𝗪𝗘𝗟𝗖𝗢𝗠𝗘 𝗧𝗢 𝗧𝗛𝗘 𝗛𝗨𝗡𝗧.{reset}\n")
-        
-        try:
-            webbrowser.open("https://t.me/zyksufirst")
-        except:
-            pass
-    
     time.sleep(1)
     
+    try:
+        webbrowser.open("https://t.me/zyksufirst")
+    except:
+        pass
+
     print(f"\n{green}𝐅𝐈𝐋𝐄 𝐈𝐒 𝐑𝐔𝐍𝐍𝐈𝐍𝐆 𝐖𝐀𝐈𝐓 𝐅𝐄𝗪 𝗠𝗜𝗡𝗨𝗧𝗘𝗦...{reset}")
     time.sleep(1)
 
