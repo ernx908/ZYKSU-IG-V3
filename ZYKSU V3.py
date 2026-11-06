@@ -57,7 +57,7 @@ script_running = True
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def typing(text, delay=0.02, color=green):
+def typing(text, delay=0.01, color=green):
     for ch in text:
         sys.stdout.write(color + ch)
         sys.stdout.flush()
@@ -93,7 +93,6 @@ def header():
     print()
 
 def draw_status():
-    
     h_str  = f"{hit:<5}"
     bi_str = f"{bad_ig:<5}"
     ni_str = f"{no_ig:<5}"
@@ -108,7 +107,7 @@ def draw_status():
 
 {yellow}╭─────────────────────────────────────────────────────╮
    
-  {green}𝗛𝗜𝗧𝗦: {h_str}{reset} {blue}𝗕𝗔𝗗 𝗜𝗚: {bi_str}{reset}{red}𝗡𝗢 𝗜𝗚: {ni_str}{reset}{yellow}𝗖𝗛𝗘𝗖𝗞𝗘𝗗: {c_str}{reset}
+  {green}𝗛𝗜𝗧𝗦: {h_str}{reset} {blue}𝗕𝗔𝗗 𝗜𝗚: {bi_str}{reset} {red}𝗡𝗢 𝗜𝗚: {ni_str}{reset} {yellow}𝗖𝗛𝗘𝗖𝗞𝗘𝗗: {c_str}{reset}
  
 {yellow}╰─────────────────────────────────────────────────────╯
 
@@ -157,8 +156,11 @@ def verify_user_joined(user_id):
             if not data.get("ok"):
                 missing_channels.append(channel)
                 continue
+            
             status = data.get("result", {}).get("status")
-            if status not in ["member", "administrator", "creator"]:
+            
+            # Added "restricted" to fix the bug
+            if status not in ["member", "administrator", "creator", "restricted"]:
                 missing_channels.append(channel)
         except Exception:
             missing_channels.append(channel)
